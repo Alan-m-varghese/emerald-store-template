@@ -16,7 +16,7 @@ export async function GET() {
       });
 
       if (orders.length > 0 || products.length > 0) {
-        const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+        const totalRevenue = orders.reduce((sum: number, o: any) => sum + o.total, 0);
         const ordersCount = orders.length;
         const customersCount = customers.length;
         
@@ -42,8 +42,8 @@ export async function GET() {
           const dateString = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
           
           const dayTotal = orders
-            .filter(o => o.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }) === dateString)
-            .reduce((sum, o) => sum + o.total, 0);
+            .filter((o: any) => o.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }) === dateString)
+            .reduce((sum: number, o: any) => sum + o.total, 0);
 
           chartData.push({
             date: dateString,
@@ -84,7 +84,7 @@ export async function GET() {
     const mockProducts = dbMock.getProducts();
     const mockCustomers = dbMock.getCustomers();
 
-    const totalRevenue = mockOrders.reduce((sum, o) => sum + o.total, 0);
+    const totalRevenue = mockOrders.reduce((sum: number, o: any) => sum + o.total, 0);
     const ordersCount = mockOrders.length;
     const customersCount = mockCustomers.length;
 
@@ -105,8 +105,8 @@ export async function GET() {
       const dateString = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       
       const dayTotal = mockOrders
-        .filter(o => o.date.includes(dateString))
-        .reduce((sum, o) => sum + o.total, 0);
+        .filter((o: any) => o.date.includes(dateString))
+        .reduce((sum: number, o: any) => sum + o.total, 0);
 
       chartData.push({
         date: dateString,

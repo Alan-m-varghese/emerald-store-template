@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
-import { dbMock, MockOrder } from "@/lib/dbMock";
+import { dbMock } from "@/lib/dbMock";
 
 interface DBOrder {
   id: string;

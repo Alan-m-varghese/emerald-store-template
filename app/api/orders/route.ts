@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     const email = url.searchParams.get("email");
 
     try {
-      let orders;
+      let orders: any[] = [];
       if (email) {
         orders = await db.order.findMany({
           where: {
@@ -49,7 +49,7 @@ export async function GET(request: Request) {
         return NextResponse.json(email ? mock.filter(o => o.customerEmail.toLowerCase() === email.toLowerCase()) : mock);
       }
 
-      const mappedOrders = orders.map(o => ({
+      const mappedOrders = orders.map((o: any) => ({
         id: o.id,
         customerName: o.user?.name || "Customer",
         customerEmail: o.user?.email || "customer@gmail.com",
@@ -57,7 +57,7 @@ export async function GET(request: Request) {
         total: o.total,
         status: o.status,
         paymentStatus: o.paymentStatus,
-        items: o.items.map(i => ({
+        items: o.items.map((i: any) => ({
           id: i.variantId,
           name: i.variant.product.name,
           price: i.price,

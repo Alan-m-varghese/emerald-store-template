@@ -1,13 +1,26 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
-import { dbMock } from "@/lib/dbMock";
+import { dbMock, MockOrder } from "@/lib/dbMock";
+
+interface DBOrder {
+  id: string;
+  total: number;
+  createdAt: Date;
+  status: string;
+  paymentStatus: string;
+  user: {
+    name: string | null;
+    email: string;
+  } | null;
+}
+
 
 export async function GET() {
   try {
     try {
-      const orders = await db.order.findMany({
+      const orders = (await db.order.findMany({
         include: { user: true }
-      });
+      })) as unknown as DBOrder[];
       const products = await db.product.findMany({
         include: { variants: true }
       });
@@ -16,7 +29,7 @@ export async function GET() {
       });
 
       if (orders.length > 0 || products.length > 0) {
-        const totalRevenue = orders.reduce((sum: number, o: any) => sum + o.total, 0);
+        const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
         const ordersCount = orders.length;
         const customersCount = customers.length;
         
@@ -42,8 +55,8 @@ export async function GET() {
           const dateString = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
           
           const dayTotal = orders
-            .filter((o: any) => o.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }) === dateString)
-            .reduce((sum: number, o: any) => sum + o.total, 0);
+            .filter(o => o.createdAt.toLocaleDateString("en-US", { month: "short", day: "numeric" }) === dateString)
+            .reduce((sum, o) => sum + o.total, 0);
 
           chartData.push({
             date: dateString,
@@ -84,7 +97,7 @@ export async function GET() {
     const mockProducts = dbMock.getProducts();
     const mockCustomers = dbMock.getCustomers();
 
-    const totalRevenue = mockOrders.reduce((sum: number, o: any) => sum + o.total, 0);
+    const totalRevenue = mockOrders.reduce((sum, o) => sum + o.total, 0);
     const ordersCount = mockOrders.length;
     const customersCount = mockCustomers.length;
 
@@ -105,8 +118,8 @@ export async function GET() {
       const dateString = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
       
       const dayTotal = mockOrders
-        .filter((o: any) => o.date.includes(dateString))
-        .reduce((sum: number, o: any) => sum + o.total, 0);
+        .filter(o => o.date.includes(dateString))
+        .reduce((sum, o) => sum + o.total, 0);
 
       chartData.push({
         date: dateString,

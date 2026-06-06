@@ -2,15 +2,44 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/prisma";
 import { dbMock } from "@/lib/dbMock";
 
+interface DBOrderItem {
+  variantId: string;
+  price: number;
+  quantity: number;
+  variant: {
+    size: string | null;
+    color: string | null;
+    product: {
+      name: string;
+    };
+  };
+}
+
+interface DBOrderWithUserAndItems {
+  id: string;
+  total: number;
+  status: string;
+  paymentStatus: string;
+  createdAt: Date;
+  couponCode: string | null;
+  trackingNumber: string | null;
+  user: {
+    name: string | null;
+    email: string;
+  } | null;
+  items: DBOrderItem[];
+}
+
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const email = url.searchParams.get("email");
 
     try {
-      let orders: any[] = [];
+      let orders: DBOrderWithUserAndItems[] = [];
       if (email) {
-        orders = await db.order.findMany({
+        orders = (await db.order.findMany({
           where: {
             user: { email: email.toLowerCase().trim() }
           },
@@ -26,9 +55,9 @@ export async function GET(request: Request) {
             },
             user: true
           }
-        });
+        })) as unknown as DBOrderWithUserAndItems[];
       } else {
-        orders = await db.order.findMany({
+        orders = (await db.order.findMany({
           include: {
             items: {
               include: {
@@ -41,7 +70,7 @@ export async function GET(request: Request) {
             },
             user: true
           }
-        });
+        })) as unknown as DBOrderWithUserAndItems[];
       }
 
       if (orders.length === 0 && (!process.env.DATABASE_URL || process.env.DATABASE_URL.includes("localhost"))) {
@@ -49,7 +78,7 @@ export async function GET(request: Request) {
         return NextResponse.json(email ? mock.filter(o => o.customerEmail.toLowerCase() === email.toLowerCase()) : mock);
       }
 
-      const mappedOrders = orders.map((o: any) => ({
+      const mappedOrders = orders.map(o => ({
         id: o.id,
         customerName: o.user?.name || "Customer",
         customerEmail: o.user?.email || "customer@gmail.com",
@@ -57,7 +86,7 @@ export async function GET(request: Request) {
         total: o.total,
         status: o.status,
         paymentStatus: o.paymentStatus,
-        items: o.items.map((i: any) => ({
+        items: o.items.map(i => ({
           id: i.variantId,
           name: i.variant.product.name,
           price: i.price,
